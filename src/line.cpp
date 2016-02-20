@@ -17,6 +17,14 @@ void line::set_point(point p1, point p2) {
 	this->p2.set_y(p2.get_y());
 }
 
+point line::get_first_point() {
+	return p1;
+}
+
+point line::get_last_point() {
+	return p2;
+}
+
 void line::draw(uint32_t color) {
 	int x1 = this->p1.get_x();
 	int y1 = this->p1.get_y();

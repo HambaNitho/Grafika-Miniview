@@ -3,40 +3,21 @@
 
 int main() {
 
-	initscr();
-	noecho();
-	int ch;
-	nodelay(stdscr, TRUE);
+	line l(0, 0, 100, 100);
+	line x(100, 100, 200, 500);
+	line y(200, 500, 700, 300);
 
-	point p(0,0);
-	view v(600,800,p);
+	l.draw();
+	x.draw();
+	y.draw();
 
-	while(true) {
-		if ((ch = getch()) == ERR) {
-			// user hasn't responded
+	view v(270, 480, 400, 400);
+	v.add_line(l);
+	v.add_line(x);
+	v.add_line(y);
 
-		}
-		else {
-			//user has pressed a key ch
-    		canvas::get_instance()->clear();
-			switch(ch) {
-				case 65: // key up
-					v.scroll('u');
-					break;
-				case 66: // key down
-					v.scroll('d');
-					break;
-				case 67: // key right
-					v.scroll('r');
-					break;
-				case 68: // key left
-					v.scroll('l');
-					break;
-				default:
-					break;
-			}
-			canvas::get_instance()->render();
-		}
-	}
+	v.draw();
+
+	canvas::get_instance()->render();
     return 0;
 }
