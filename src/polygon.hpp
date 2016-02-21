@@ -4,7 +4,6 @@
 #include <vector>
 #include "include.hpp"
 #include "canvas.hpp"
-#include "color.hpp"
 #include "point.hpp"
 
 class polygon {
@@ -13,7 +12,9 @@ public:
 	void add_point(int x, int y);
 	void add_point(point p);
 	void set_point(int index, point new_value);
+	
 	std::vector<point> get_points();
+	
 	void reset();
 	void resize(int n_points);
 

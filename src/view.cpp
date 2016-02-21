@@ -1,4 +1,5 @@
 #include "view.hpp"
+#include "polygon.hpp"
 
 /*
  * 
@@ -13,15 +14,7 @@ view::view() {
 	this->clip_position.set_coord(0,0);
 	this->window_height = canvas::get_instance()->get_var_info().yres;
 	this->window_width = canvas::get_instance()->get_var_info().xres;
-}
-
-view::view(int height, int width, point position, point clip_position) {
-	this->height = height;
-	this->width = width;
-	this->position.set_coord(position.get_x(),position.get_y());
-	this->clip_position.set_coord(clip_position.get_x(),clip_position.get_y());
-	this->window_height = canvas::get_instance()->get_var_info().yres;
-	this->window_width = canvas::get_instance()->get_var_info().xres;
+	set_ratio();
 }
 
 view::view(int height, int width, point position, point clip_position, float scale) {
@@ -31,15 +24,7 @@ view::view(int height, int width, point position, point clip_position, float sca
 	this->clip_position.set_coord(clip_position.get_x(),clip_position.get_y());
 	this->window_height = height * scale;
 	this->window_width = width * scale;
-}
-
-view::view(int height, int width, int xpos, int ypos) {
-	this->height = height;
-	this->width = width;
-	this->position.set_coord(xpos,ypos);
-	this->clip_position.set_coord(0,0);
-	this->window_height = 600;
-	this->window_width = 800;
+	set_ratio();
 }
 
 /*
@@ -73,11 +58,7 @@ void view::set_position(int x, int y) {
 }
 
 
-void view::add_line(line l) {
-	lines.push_back(l);
-}
-
-void view::draw() {
+void view::draw(polygon p) {
 
 	// Draw map
 	int x1 = position.get_x();
@@ -106,10 +87,13 @@ void view::draw() {
 
 	cl1.draw(0xffff0000); cl2.draw(0xffff0000); cl3.draw(0xffff0000); cl4.draw(0xffff0000);
 
+	std::vector<point> points = p.get_points();
+	
+	for (int i = 0; i < points.size(); i++) {
+		
+		point p1 = points[i];
+		point p2 = points[(i + 1) % points.size()];
 
-	for (int i = 0; i < lines.size(); i++) {
-		point p1 = lines[i].get_first_point();
-		point p2 = lines[i].get_last_point();
 
 		int x1 = p1.get_x();
 		int y1 = p1.get_y();
@@ -117,39 +101,28 @@ void view::draw() {
 		int y2 = p2.get_y();
 
 		fb_var_screeninfo vinfo = canvas::get_instance()->get_var_info();
-/*
-		float ratio_x = (float)this->width /  vinfo.xres;
-		float ratio_y = (float)this->height / vinfo.yres;
 
-*/
+
 		// Get view-clipped ratio, save scale instead?
 		float ratio_x = (float)this->width /  this->window_width;
 		float ratio_y = (float)this->height / this->window_height;
-//view.y = (map.y - view.project_position_y) * view.ratio_y + view.position_y;
-//view.x = (map.x - view.project_position_x) * view.ratio_x + view.position_x;
-// ______________________________________________________
-//|                                                      |
-//| ________________                                     |
-//||                |                                    |
-//||   clipped      |                                    |        _____________________
-//||                |                                    |       |                     |
-//||________________|     MAP                            |       |                     |
-//|                                                      |       |        view         |
-//|                                                      |       |                     |
-//|                                                      |       |                     |
-//|                                                      |       |_____________________|
-//|                                                      |
-//|______________________________________________________|
-		// Transform points
-		// PENTING!!!!!!!!!!!!!!!!!! 
-		// ASUMSI ORIGIN 0, 0
-/*
-		int v1x = (x1 - 0) * ratio_x + position.get_x();
-		int v1y = (y1 - 0) * ratio_y + position.get_y();
-
-		int v2x = (x2 - 0) * ratio_x + position.get_x();
-		int v2y = (y2 - 0) * ratio_y + position.get_y();
-*/
+		
+		//view.y = (map.y - view.project_position_y) * view.ratio_y + view.position_y;
+		//view.x = (map.x - view.project_position_x) * view.ratio_x + view.position_x;
+		
+		// ______________________________________________________
+		//|                                                      |
+		//| ________________                                     |
+		//||                |                                    |
+		//||   clipped      |                                    |        _____________________
+		//||                |                                    |       |                     |
+		//||________________|     MAP                            |       |                     |
+		//|                                                      |       |        view         |
+		//|                                                      |       |                     |
+		//|                                                      |       |                     |
+		//|                                                      |       |_____________________|
+		//|                                                      |
+		//|______________________________________________________|
 
 		int v1x = (x1 - clip_position.get_x()) * ratio_x + position.get_x();
 		int v1y = (y1 - clip_position.get_y()) * ratio_y + position.get_y();
@@ -163,23 +136,24 @@ void view::draw() {
 	}
 }
 
-/*
- * 
- * Transformation
- *
- */
-
-void view::scrollz(char direction) {
-	int x = get_position().get_x();
-	int y = get_position().get_y();
-	switch (direction) {
-		case 'u': set_position(x,y-10); break;
-		case 'd': set_position(x,y+10); break;
-		case 'l': set_position(x-10,y); break;
-		case 'r': set_position(x+10,y); break;
-	}
+void view::move_clip(int delta_x, int delta_y) {
+	clip_position.set_x(clip_position.get_x() + delta_x);
+	clip_position.set_y(clip_position.get_y() + delta_y);
 }
 
-void view::zoom(char direction) {
+void view::zoom(float scale) {
+	this->window_height += height_ratio*scale;
+	this->window_width += width_ratio*scale;
+}
 
+void view::set_ratio() {
+	
+	int a,b,c;
+	a = width;
+	b = height;
+	while ( a != 0 ) {
+	   c = a; a = b%a;  b = c;
+	}
+	width_ratio = width/b;
+	height_ratio = height/b;
 }

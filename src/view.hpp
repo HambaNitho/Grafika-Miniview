@@ -3,15 +3,14 @@
 
 #include "point.hpp"
 #include "line.hpp"
+#include "polygon.hpp"
 #include <vector>
 
 class view {
 public:
 	// Constructor
 	view();
-	view(int height, int width, point position, point clip_position);
 	view(int height, int width, point position, point clip_position, float scale);
-	view(int height, int width, int xpos, int ypos);
 
 	// Setter and getter
 	int get_width() const;
@@ -23,13 +22,15 @@ public:
 	void set_height(int height);
 	void set_position(int x, int y);
 
-	void add_line(line l);
+	// Move clip position
+	void move_clip(int delta_x, int delta_y);
 
-	void draw();
+	// Change scale of clip
+	void zoom(float scale);
 
-	// Transformation
-	void scrollz(char direction);
-	void zoom(char direction);
+
+	void draw(polygon p);
+
 
 private:
 	int height;
@@ -40,7 +41,10 @@ private:
 	int window_width;
 	point clip_position; // clipping position on map
 
-	std::vector<line> lines;
+	int width_ratio;
+	int height_ratio;
+
+	void set_ratio();
 };
 
 #endif

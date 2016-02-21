@@ -5,5 +5,6 @@
 #include "line.hpp"
 #include "point.hpp"
 #include "view.hpp"
+#include "polygon.hpp"
 
 #endif
