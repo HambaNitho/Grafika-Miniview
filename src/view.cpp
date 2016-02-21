@@ -130,9 +130,184 @@ void view::draw(polygon p) {
 		int v2x = (x2 - clip_position.get_x()) * ratio_x + position.get_x();
 		int v2y = (y2 - clip_position.get_y()) * ratio_y + position.get_y();
 
-		line new_l(v1x, v1y, v2x, v2y);
+		//line new_l(v1x, v1y, v2x, v2y);
 
-		new_l.draw();
+		//new_l.draw();
+		int l1,r1,b1,t1,l2,r2,b2,t2;
+
+		if (v1x >= position.get_x()) l1=0; else l1=1;
+		if (v1x > position.get_x()+width) r1=1; else r1=0; 
+		if (v1y > position.get_y()+height) b1=1; else b1=0;
+		if (v1y >= position.get_y()) t1=0; else t1=1;
+
+		if (v2x >= position.get_x()) l2=0; else l2=1;
+		if (v2x > position.get_x()+width) r2=1; else r2=0; 
+		if (v2y > position.get_y()+height) b2=1; else b2=0;
+		if (v2y >= position.get_y()) t2=0; else t2=1;
+		
+
+		if (l1==0 && r1==0 && b1==0 && t1==0 && l2==0 && r2==0 && b2==0 && t2==0) {
+			// garis visible
+			line new_l(v1x, v1y, v2x, v2y);
+			new_l.draw();
+		}
+		else {
+			int logicbit[4];
+			logicbit[0] = l1 && l2;
+			logicbit[1] = r1 && r2;
+			logicbit[2] = b1 && b2;
+			logicbit[3] = t1 && t2;
+
+			if ((logicbit[0] || logicbit[1] || logicbit[2] || logicbit[3]) == 0) {
+				// clipping
+				int new_v1x, new_v1y, new_v2x, new_v2y;
+
+				// cek point 1
+				if (l1==1 && r1==0 && b1==0 && t1==1) {
+					// perpotongannya ada di left atau top
+					// anggap di left
+					new_v1x = position.get_x();
+					new_v1y = ((v2y - v1y)/(v2x - v1x)) * (new_v1x - v1x) + v1y;
+					if (new_v1y<position.get_y() || new_v1y>position.get_y()+height) {
+						// ternyata ada di top
+						new_v1y = position.get_y();
+						new_v1x = ((v2x - v1x)/(v2y - v1y)) * (new_v1y - v1y) + v1x;
+					}
+				}
+				else if (l1==0 && r1==0 && b1==0 && t1==1) {
+					// perpotongannya ada di top
+					new_v1y = position.get_y();
+					new_v1x = ((v2x - v1x)/(v2y - v1y)) * (new_v1y - v1y) + v1x;
+				}
+				else if (l1==0 && r1==1 && b1==0 && t1==1) {
+					// perpotongannya ada di right atau top
+					// anggap di right
+					new_v1x = position.get_x() + width;
+					new_v1y = ((v2y - v1y)/(v2x - v1x)) * (new_v1x - v1x) + v1y;
+					if (new_v1y<position.get_y() || new_v1y>position.get_y()+height) {
+						// ternyata ada di top
+						new_v1y = position.get_y();
+						new_v1x = ((v2x - v1x)/(v2y - v1y)) * (new_v1y - v1y) + v1x;
+					}
+				}
+				else if (l1==1 && r1==0 && b1==0 && t1==0) {
+					// perpotongannya ada di left
+					new_v1x = position.get_x();
+					new_v1y = ((v2y - v1y)/(v2x - v1x)) * (new_v1x - v1x) + v1y;
+				}
+				else if (l1==0 && r1==1 && b1==0 && t1==0) {
+					// perpotongannya ada di right
+					new_v1x = position.get_x() + width;
+					new_v1y = ((v2y - v1y)/(v2x - v1x)) * (new_v1x - v1x) + v1y;
+				}
+				else if (l1==1 && r1==0 && b1==1 && t1==0) {
+					// perpotongannya ada di left atau bottom
+					// anggap di left
+					new_v1x = position.get_x();
+					new_v1y = ((v2y - v1y)/(v2x - v1x)) * (new_v1x - v1x) + v1y;
+					if (new_v1y<position.get_y() || new_v1y>position.get_y()+height) {
+						// ternyata ada di bottom
+						new_v1y = position.get_y() + height;
+						new_v1x = ((v2x - v1x)/(v2y - v1y)) * (new_v1y - v1y) + v1x;
+					}
+				}
+				else if (l1==0 && r1==0 && b1==1 && t1==0) {
+					// perpotongannya ada di bottom
+					new_v1y = position.get_y() + height;
+					new_v1x = ((v2x - v1x)/(v2y - v1y)) * (new_v1y - v1y) + v1x;
+				}
+				else if (l1==0 && r1==1 && b1==1 && t1==0) {
+					// perpotongannya ada di right atau bottom
+					// anggap di right
+					new_v1x = position.get_x() + width;
+					new_v1y = ((v2y - v1y)/(v2x - v1x)) * (new_v1x - v1x) + v1y;
+					if (new_v1y<position.get_y() || new_v1y>position.get_y()+height) {
+						// ternyata ada di bottom
+						new_v1y = position.get_y() + height;
+						new_v1x = ((v2x - v1x)/(v2y - v1y)) * (new_v1y - v1y) + v1x;
+					}
+				}
+				else {
+					new_v1y = v1y;
+					new_v1x = v1x;
+				}
+
+
+
+				//cek point 2
+				if (l2==1 && r2==0 && b2==0 && t2==1) {
+					// perpotongannya ada di left atau top
+					// anggap di left
+					new_v2x = position.get_x();
+					new_v2y = ((v2y - v1y)/(v2x - v1x)) * (new_v2x - v1x) + v1y;
+					if (new_v2y<position.get_y() || new_v2y>position.get_y()+height) {
+						// ternyata ada di top
+						new_v2y = position.get_y();
+						new_v2x = ((v2x - v1x)/(v2y - v1y)) * (new_v2y - v1y) + v1x;
+					}
+				}
+				else if (l2==0 && r2==0 && b2==0 && t2==1) {
+					// perpotongannya ada di top
+					new_v2y = position.get_y();
+					new_v2x = ((v2x - v1x)/(v2y - v1y)) * (new_v2y - v1y) + v1x;
+				}
+				else if (l2==0 && r2==1 && b2==0 && t2==1) {
+					// perpotongannya ada di right atau top
+					// anggap di right
+					new_v2x = position.get_x() + width;
+					new_v2y = ((v2y - v1y)/(v2x - v1x)) * (new_v2x - v1x) + v1y;
+					if (new_v2y<position.get_y() || new_v2y>position.get_y()+height) {
+						// ternyata ada di top
+						new_v2y = position.get_y();
+						new_v2x = ((v2x - v1x)/(v2y - v1y)) * (new_v2y - v1y) + v1x;
+					}
+				}
+				else if (l2==1 && r2==0 && b2==0 && t2==0) {
+					// perpotongannya ada di left
+					new_v2x = position.get_x();
+					new_v2y = ((v2y - v1y)/(v2x - v1x)) * (new_v2x - v1x) + v1y;
+				}
+				else if (l2==0 && r2==1 && b2==0 && t2==0) {
+					// perpotongannya ada di right
+					new_v2x = position.get_x() + width;
+					new_v2y = ((v2y - v1y)/(v2x - v1x)) * (new_v2x - v1x) + v1y;
+				}
+				else if (l2==1 && r2==0 && b2==1 && t2==0) {
+					// perpotongannya ada di left atau bottom
+					// anggap di left
+					new_v2x = position.get_x();
+					new_v2y = ((v2y - v1y)/(v2x - v1x)) * (new_v2x - v1x) + v1y;
+					if (new_v2y<position.get_y() || new_v2y>position.get_y()+height) {
+						// ternyata ada di bottom
+						new_v2y = position.get_y() + height;
+						new_v2x = ((v2x - v1x)/(v2y - v1y)) * (new_v2y - v1y) + v1x;
+					}
+				}
+				else if (l2==0 && r2==0 && b2==1 && t2==0) {
+					// perpotongannya ada di bottom
+					new_v2y = position.get_y() + height;
+					new_v2x = ((v2x - v1x)/(v2y - v1y)) * (new_v2y - v1y) + v1x;
+				}
+				else if (l2==0 && r2==1 && b2==1 && t2==0) {
+					// perpotongannya ada di right atau bottom
+					// anggap di right
+					new_v2x = position.get_x() + width;
+					new_v2y = ((v2y - v1y)/(v2x - v1x)) * (new_v2x - v1x) + v1y;
+					if (new_v2y<position.get_y() || new_v2y>position.get_y()+height) {
+						// ternyata ada di bottom
+						new_v2y = position.get_y() + height;
+						new_v2x = ((v2x - v1x)/(v2y - v1y)) * (new_v2y - v1y) + v1x;
+					}
+				}
+				else {
+					new_v2y = v2y;
+					new_v2x = v2x;
+				}
+
+				line new_l(new_v1x, new_v1y, new_v2x, new_v2y);
+				new_l.draw();
+			}
+		}
 	}
 }
 
