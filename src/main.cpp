@@ -1,4 +1,5 @@
 #include "gl.hpp"
+#include <ncurses.h>
 
 int main() {
 

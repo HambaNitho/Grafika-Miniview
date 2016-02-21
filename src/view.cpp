@@ -28,15 +28,15 @@ view::view(int height, int width, point position) {
  *
  */
 
-int view::get_width() {
+int view::get_width() const {
 	return width;
 }
 
-int view::get_height() {
+int view::get_height()const {
 	return height;
 }
 
-point get_position() {
+point view::get_position() const {
 	return position;
 }
 
@@ -69,6 +69,6 @@ void view::scroll(char direction) {
 	}
 }
 
-void view::zoom(int direction) {
+void view::zoom(char direction) {
 
 }
