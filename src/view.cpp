@@ -11,8 +11,8 @@ view::view() {
 	this->width = 0;
 	this->position.set_coord(0,0);
 	this->clip_position.set_coord(0,0);
-	this->window_height = 600;
-	this->window_width = 800;
+	this->window_height = canvas::get_instance()->get_var_info().yres;
+	this->window_width = canvas::get_instance()->get_var_info().xres;
 }
 
 view::view(int height, int width, point position, point clip_position) {
@@ -20,8 +20,8 @@ view::view(int height, int width, point position, point clip_position) {
 	this->width = width;
 	this->position.set_coord(position.get_x(),position.get_y());
 	this->clip_position.set_coord(clip_position.get_x(),clip_position.get_y());
-	this->window_height = 600;
-	this->window_width = 800;
+	this->window_height = canvas::get_instance()->get_var_info().yres;
+	this->window_width = canvas::get_instance()->get_var_info().xres;
 }
 
 view::view(int height, int width, point position, point clip_position, float scale) {
@@ -79,6 +79,7 @@ void view::add_line(line l) {
 
 void view::draw() {
 
+	// Draw map
 	int x1 = position.get_x();
 	int y1 = position.get_y();
 
@@ -91,6 +92,20 @@ void view::draw() {
 	line l4(x1, y2, x1, y1);
 
 	l1.draw(); l2.draw(); l3.draw(); l4.draw();
+	
+	// Draw clipped area
+	int cx1 = clip_position.get_x();
+	int cy1 = clip_position.get_y();
+	int cx2 = cx1 + window_width;
+	int cy2 = cy1 + window_height;
+
+	line cl1(cx1, cy1, cx2, cy1);
+	line cl2(cx2, cy1, cx2, cy2);
+	line cl3(cx2, cy2, cx1, cy2);
+	line cl4(cx1, cy2, cx1, cy1);
+
+	cl1.draw(0xffff0000); cl2.draw(0xffff0000); cl3.draw(0xffff0000); cl4.draw(0xffff0000);
+
 
 	for (int i = 0; i < lines.size(); i++) {
 		point p1 = lines[i].get_first_point();
