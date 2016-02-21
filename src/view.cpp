@@ -10,22 +10,34 @@ view::view() {
 	this->height = 0;
 	this->width = 0;
 	this->position.set_coord(0,0);
+	this->clip_position.set_coord(0,0);
 	this->window_height = 600;
 	this->window_width = 800;
 }
 
-view::view(int height, int width, point position) {
+view::view(int height, int width, point position, point clip_position) {
 	this->height = height;
 	this->width = width;
 	this->position.set_coord(position.get_x(),position.get_y());
+	this->clip_position.set_coord(clip_position.get_x(),clip_position.get_y());
 	this->window_height = 600;
 	this->window_width = 800;
+}
+
+view::view(int height, int width, point position, point clip_position, float scale) {
+	this->height = height;
+	this->width = width;
+	this->position.set_coord(position.get_x(),position.get_y());
+	this->clip_position.set_coord(clip_position.get_x(),clip_position.get_y());
+	this->window_height = height * scale;
+	this->window_width = width * scale;
 }
 
 view::view(int height, int width, int xpos, int ypos) {
 	this->height = height;
 	this->width = width;
 	this->position.set_coord(xpos,ypos);
+	this->clip_position.set_coord(0,0);
 	this->window_height = 600;
 	this->window_width = 800;
 }
@@ -90,18 +102,45 @@ void view::draw() {
 		int y2 = p2.get_y();
 
 		fb_var_screeninfo vinfo = canvas::get_instance()->get_var_info();
-
+/*
 		float ratio_x = (float)this->width /  vinfo.xres;
 		float ratio_y = (float)this->height / vinfo.yres;
 
-
+*/
+		// Get view-clipped ratio, save scale instead?
+		float ratio_x = (float)this->width /  this->window_width;
+		float ratio_y = (float)this->height / this->window_height;
+//view.y = (map.y - view.project_position_y) * view.ratio_y + view.position_y;
+//view.x = (map.x - view.project_position_x) * view.ratio_x + view.position_x;
+// ______________________________________________________
+//|                                                      |
+//| ________________                                     |
+//||                |                                    |
+//||   clipped      |                                    |        _____________________
+//||                |                                    |       |                     |
+//||________________|     MAP                            |       |                     |
+//|                                                      |       |        view         |
+//|                                                      |       |                     |
+//|                                                      |       |                     |
+//|                                                      |       |_____________________|
+//|                                                      |
+//|______________________________________________________|
+		// Transform points
 		// PENTING!!!!!!!!!!!!!!!!!! 
 		// ASUMSI ORIGIN 0, 0
+/*
 		int v1x = (x1 - 0) * ratio_x + position.get_x();
 		int v1y = (y1 - 0) * ratio_y + position.get_y();
 
 		int v2x = (x2 - 0) * ratio_x + position.get_x();
 		int v2y = (y2 - 0) * ratio_y + position.get_y();
+*/
+
+		int v1x = (x1 - clip_position.get_x()) * ratio_x + position.get_x();
+		int v1y = (y1 - clip_position.get_y()) * ratio_y + position.get_y();
+
+		int v2x = (x2 - clip_position.get_x()) * ratio_x + position.get_x();
+		int v2y = (y2 - clip_position.get_y()) * ratio_y + position.get_y();
 
 		line new_l(v1x, v1y, v2x, v2y);
 

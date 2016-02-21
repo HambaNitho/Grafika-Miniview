@@ -9,7 +9,8 @@ class view {
 public:
 	// Constructor
 	view();
-	view(int height, int width, point position);
+	view(int height, int width, point position, point clip_position);
+	view(int height, int width, point position, point clip_position, float scale);
 	view(int height, int width, int xpos, int ypos);
 
 	// Setter and getter
@@ -33,9 +34,11 @@ public:
 private:
 	int height;
 	int width;
+	point position; // view position on screen
+	// window = clipped area
 	int window_height;
 	int window_width;
-	point position;
+	point clip_position; // clipping position on map
 
 	std::vector<line> lines;
 };
